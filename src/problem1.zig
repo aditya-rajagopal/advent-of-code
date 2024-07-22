@@ -1,5 +1,6 @@
 const std = @import("std");
 const testing = std.testing;
+const time_function_error = @import("chrono.zig").time_function_error;
 
 const test_str =
     \\two1nine
@@ -11,23 +12,12 @@ const test_str =
     \\7pqrstsixteen
 ;
 
-const one = "one";
-const two = "two";
-const three = "three";
-const four = "four";
-const five = "five";
-const six = "six";
-const seven = "seven";
-const eight = "eight";
-const nine = "nine";
-
-fn problem1(data: []const u8) !void {
+fn problem1_part1(data: []const u8) !u32 {
     var total: u32 = 0;
     var is_first: bool = true;
     var last_digit: u8 = 0;
-    const len = data.len;
 
-    for (data, 0..) |ch, i| {
+    for (data) |ch| {
         switch (ch) {
             '\n' => {
                 total += @intCast(last_digit);
@@ -50,7 +40,7 @@ fn problem1(data: []const u8) !void {
         }
     }
     total += @intCast(last_digit);
-    std.debug.print("Total: {d}\n", .{total});
+    return total;
 }
 
 fn is_digit(ch: u8) bool {
@@ -60,7 +50,7 @@ fn is_digit(ch: u8) bool {
     return false;
 }
 
-test "output" {
+test "output_part1" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
@@ -74,6 +64,10 @@ test "output" {
     var buffer: [102400]u8 = undefined;
     const data = try file.reader().readAll(&buffer);
 
-    try problem1(test_str);
-    try problem1(buffer[0..data]);
+    var total = try problem1_part1(test_str);
+    // std.debug.print("Total test: {d}\n", .{total});
+    total = try problem1_part1(buffer[0..data]);
+    const time = try time_function_error(problem1_part1, .{buffer[0..data]});
+    std.debug.print("Time to run problem1 part1: {d}\n", .{std.fmt.fmtDuration(time)});
+    std.debug.print("Problem1 part1: {d}\n", .{total});
 }
